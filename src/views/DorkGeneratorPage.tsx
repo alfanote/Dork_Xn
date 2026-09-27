@@ -146,10 +146,10 @@ export const DorkGeneratorPage: React.FC<DorkGeneratorPageProps> = ({
                 </span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                Search Dorks for <span className="text-blue-600 dark:text-blue-400 font-mono">{target.domain}</span>
+                Dorksearch Query Generator for <span className="text-blue-600 dark:text-blue-400 font-mono">{target.domain}</span>
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-                Generated search queries using {selectedEngine === 'google' ? 'Google Dorks' : 'Yandex Dorks'}.
+                Generated precision search queries using Dorksearch for {selectedEngine === 'google' ? 'Google Dorks' : 'Yandex Dorks'}.
               </p>
             </div>
 

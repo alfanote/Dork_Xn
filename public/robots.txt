@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://dorksearch.app/sitemap.xml
+Sitemap: https://dorksearch.in/sitemap.xml

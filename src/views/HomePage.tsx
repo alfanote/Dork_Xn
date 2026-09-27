@@ -147,13 +147,13 @@ export const HomePage: React.FC<HomePageProps> = ({
               <MascotLogoIcon className="w-10 h-10 shrink-0" />
               <div>
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-                  <span>Dork Search Generator</span>
+                  <span>Dorksearch &ndash; Google Dork Generator</span>
                   <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
                     Live
                   </span>
                 </h1>
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                  Search smarter. Research responsibly.
+                  Dorksearch helps you search smarter and research responsibly with Google &amp; Yandex dorks.
                 </p>
               </div>
             </div>
