@@ -1,5 +1,5 @@
 {
   "name": "Dorksearch - Search Smarter. Research Responsibly",
   "description": "A playful, professional Google & Yandex search-query and dork generator for authorized OSINT, security research, and educational reconnaissance.",
-  "requestFramePermissions": [],
+  "requestFramePermissions": []
 }
