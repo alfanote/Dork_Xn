@@ -18,6 +18,98 @@ import { LegalPages } from './views/LegalPages';
 import { trackPageView } from './utils/analytics';
 import { updateDocumentSEO } from './utils/seo';
 
+const ROUTE_ALIASES: Record<string, string> = {
+  '': 'home',
+  '/': 'home',
+  home: 'home',
+  'dork-generator': 'generator',
+  generator: 'generator',
+  'google-dorks': 'google-dorks',
+  google: 'google-dorks',
+  'yandex-dorks': 'yandex-dorks',
+  yandex: 'yandex-dorks',
+  guides: 'guides',
+  tools: 'tools',
+  faq: 'faq',
+  about: 'about',
+  contact: 'contact',
+  'privacy-policy': 'privacy-policy',
+  terms: 'terms',
+  disclaimer: 'disclaimer',
+  'cookie-policy': 'cookie-policy',
+  'editorial-policy': 'editorial-policy',
+};
+
+const getRepoBasePath = (): string => {
+  if (typeof window === 'undefined') return '';
+  const pathname = window.location.pathname;
+  const segments = pathname.split('/').filter(Boolean);
+  // If first segment is NOT a known route, it's a GitHub Pages subfolder (e.g. 'Dork_Xn')
+  if (segments.length > 0 && !ROUTE_ALIASES[segments[0]]) {
+    return `/${segments[0]}`;
+  }
+  return '';
+};
+
+const parseRouteFromLocation = (): string => {
+  if (typeof window === 'undefined') return 'home';
+
+  // 1. Check GitHub Pages 404 SPA redirect: ?/path or ?p=/path
+  const search = window.location.search;
+  if (search) {
+    if (search.startsWith('?/')) {
+      const redirectedPath = search.slice(2).split('&')[0].replace(/^\//, '').replace(/\/$/, '');
+      if (redirectedPath && ROUTE_ALIASES[redirectedPath]) {
+        const basePath = getRepoBasePath();
+        const cleanUrl = basePath ? `${basePath}/${redirectedPath}` : `/${redirectedPath}`;
+        window.history.replaceState(null, '', cleanUrl);
+        return ROUTE_ALIASES[redirectedPath];
+      }
+    }
+    const params = new URLSearchParams(search);
+    const p = params.get('p');
+    if (p) {
+      const cleanP = p.replace(/^\//, '').replace(/\/$/, '');
+      if (ROUTE_ALIASES[cleanP]) {
+        return ROUTE_ALIASES[cleanP];
+      }
+    }
+  }
+
+  // 2. Check hash (e.g. #/guides, #guides)
+  if (window.location.hash) {
+    const cleanHash = window.location.hash.replace(/^#\/?/, '').split('?')[0].replace(/\/$/, '');
+    if (cleanHash && ROUTE_ALIASES[cleanHash]) {
+      return ROUTE_ALIASES[cleanHash];
+    }
+  }
+
+  // 3. Check pathname
+  const pathname = window.location.pathname;
+  const segments = pathname.split('/').filter(Boolean);
+
+  if (segments.length === 0) return 'home';
+
+  // Check last segment first (e.g. /Dork_Xn/guides -> 'guides')
+  const lastSegment = segments[segments.length - 1];
+  if (ROUTE_ALIASES[lastSegment]) {
+    return ROUTE_ALIASES[lastSegment];
+  }
+
+  // If only 1 segment and it's the repo name (e.g. 'Dork_Xn'), fallback to home
+  if (segments.length === 1 && !ROUTE_ALIASES[segments[0]]) {
+    return 'home';
+  }
+
+  for (let i = segments.length - 1; i >= 0; i--) {
+    if (ROUTE_ALIASES[segments[i]]) {
+      return ROUTE_ALIASES[segments[i]];
+    }
+  }
+
+  return 'home';
+};
+
 export default function App() {
   // Theme state
   const [isDark, setIsDark] = useState<boolean>(() => {
@@ -95,31 +187,29 @@ export default function App() {
     });
   };
 
-  // Routing State
-  const getInitialRoute = (): string => {
-    const path = window.location.pathname.replace(/^\//, '');
-    if (!path || path === '') return 'home';
-    if (path === 'dork-generator') return 'generator';
-    return path;
-  };
-
-  const [currentRoute, setCurrentRoute] = useState<string>(getInitialRoute);
+  // Routing State using robust path and hash parsing
+  const [currentRoute, setCurrentRoute] = useState<string>(parseRouteFromLocation);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [quickSearchOpen, setQuickSearchOpen] = useState(false);
 
-  // Handle browser back/forward buttons
+  // Handle browser back/forward buttons and hash navigation
   useEffect(() => {
-    const handlePopState = () => {
-      const path = window.location.pathname.replace(/^\//, '');
-      setCurrentRoute(path === '' || path === '/' ? 'home' : path === 'dork-generator' ? 'generator' : path);
+    const handleLocationChange = () => {
+      setCurrentRoute(parseRouteFromLocation());
     };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener('popstate', handleLocationChange);
+    window.addEventListener('hashchange', handleLocationChange);
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      window.removeEventListener('hashchange', handleLocationChange);
+    };
   }, []);
 
   // Track page views and dynamically synchronize document SEO meta tags, canonical URL & JSON-LD
   useEffect(() => {
-    const urlPath = currentRoute === 'home' ? '/' : currentRoute === 'generator' ? '/dork-generator' : `/${currentRoute}`;
+    const basePath = getRepoBasePath();
+    const routeSlug = currentRoute === 'home' ? '' : currentRoute === 'generator' ? 'dork-generator' : currentRoute;
+    const urlPath = routeSlug ? `${basePath}/${routeSlug}` : `${basePath}/` || '/';
     const seoConfig = updateDocumentSEO(currentRoute);
     trackPageView(urlPath, seoConfig.title);
   }, [currentRoute]);
@@ -133,7 +223,9 @@ export default function App() {
     if (params?.category) setSelectedCategory(params.category);
 
     setCurrentRoute(route);
-    const urlPath = route === 'home' ? '/' : route === 'generator' ? '/dork-generator' : `/${route}`;
+    const basePath = getRepoBasePath();
+    const routeSlug = route === 'home' ? '' : route === 'generator' ? 'dork-generator' : route;
+    const urlPath = routeSlug ? `${basePath}/${routeSlug}` : `${basePath}/` || '/';
     window.history.pushState(null, '', urlPath);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };

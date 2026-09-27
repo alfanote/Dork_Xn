@@ -669,7 +669,10 @@ export function updateDocumentSEO(routeKey: string): RouteSEOConfig {
   }
 
   const origin = window.location.origin;
-  const canonicalUrl = `${origin}${config.canonicalPath}`;
+  const pathname = window.location.pathname;
+  const segments = pathname.split('/').filter(Boolean);
+  const basePath = segments.length > 0 && segments[0] === 'Dork_Xn' ? '/Dork_Xn' : '';
+  const canonicalUrl = `${origin}${basePath}${config.canonicalPath}`;
 
   // 1. Title tag
   document.title = config.title;
