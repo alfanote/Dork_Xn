@@ -16,6 +16,33 @@
 
       gtag('config', 'G-SCQX6S9LN2');
     </script>
+    <script>
+      // Clean up SPA redirect parameters (?/route or ?p=/route) instantly into clean URL (e.g. /route)
+      (function() {
+        try {
+          var search = window.location.search;
+          if (search) {
+            var redirected = null;
+            if (search.indexOf('?/') === 0) {
+              redirected = search.slice(2).split('&')[0];
+            } else {
+              var match = search.match(/[?&]p=([^&]+)/);
+              if (match) {
+                redirected = match[1];
+              }
+            }
+            if (redirected) {
+              var cleanRoute = decodeURIComponent(redirected).replace(/~and~/g, '&').replace(/^\//, '');
+              // Preserve any non-redirect query parameters if present
+              var remainingParams = search.replace(/^\?\/?([^&]*)/, '').replace(/^[?&]p=[^&]*/, '').replace(/^&/, '');
+              var newSearch = remainingParams ? '?' + remainingParams : '';
+              var targetPath = '/' + cleanRoute + newSearch + window.location.hash;
+              window.history.replaceState(null, '', targetPath);
+            }
+          }
+        } catch (e) {}
+      })();
+    </script>
     <title>Dorksearch - Search Smarter. Research Responsibly.</title>
     <meta name="description" content="Dorksearch is a Google and Yandex search-query and dork builder for authorized OSINT, cybersecurity reconnaissance, and educational syntax auditing." />
     <meta name="keywords" content="dorksearch, dork search, google dorks, yandex dorks, osint tools, search operators, dork builder, cybersecurity reconnaissance, passive recon" />

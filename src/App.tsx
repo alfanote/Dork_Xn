@@ -43,9 +43,13 @@ const ROUTE_ALIASES: Record<string, string> = {
 
 const getRepoBasePath = (): string => {
   if (typeof window === 'undefined') return '';
+  // Custom domains (like dorksearch.in) or localhost serve from root without subfolder
+  if (!window.location.hostname.endsWith('github.io')) {
+    return '';
+  }
   const pathname = window.location.pathname;
   const segments = pathname.split('/').filter(Boolean);
-  // If first segment is NOT a known route, it's a GitHub Pages subfolder (e.g. 'Dork_Xn')
+  // If first segment is NOT a known route on github.io, it's a repo subfolder (e.g. 'Dork_Xn')
   if (segments.length > 0 && !ROUTE_ALIASES[segments[0]]) {
     return `/${segments[0]}`;
   }
