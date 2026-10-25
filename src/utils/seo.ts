@@ -611,6 +611,25 @@ export const SEO_CONFIGS: Record<string, RouteSEOConfig> = {
       publisher: { '@type': 'Organization', name: 'Dorksearch' },
     }),
   },
+
+  '404': {
+    title: 'Page Not Found (404) | Dorksearch',
+    description: 'The requested page or query pattern was not found on Dorksearch.',
+    keywords: '404, not found, dorksearch',
+    canonicalPath: '/404',
+    ogType: 'website',
+    breadcrumbs: [
+      { name: 'Home', path: '/' },
+      { name: 'Page Not Found', path: '/404' },
+    ],
+    getStructuredData: (origin: string) => ({
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: 'Page Not Found - Dorksearch',
+      url: `${origin}/404`,
+      description: 'The requested page was not found.',
+    }),
+  },
 };
 
 /**

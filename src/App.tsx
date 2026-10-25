@@ -15,6 +15,7 @@ import { FAQPage } from './views/FAQPage';
 import { AboutPage } from './views/AboutPage';
 import { ContactPage } from './views/ContactPage';
 import { LegalPages } from './views/LegalPages';
+import { NotFoundPage } from './views/NotFoundPage';
 import { trackPageView } from './utils/analytics';
 import { updateDocumentSEO } from './utils/seo';
 
@@ -51,27 +52,41 @@ const getRepoBasePath = (): string => {
   return '';
 };
 
-const parseRouteFromLocation = (): string => {
-  if (typeof window === 'undefined') return 'home';
+const parseRouteFromLocation = (): { route: string; attemptedPath?: string } => {
+  if (typeof window === 'undefined') return { route: 'home' };
 
   // 1. Check GitHub Pages 404 SPA redirect: ?/path or ?p=/path
   const search = window.location.search;
   if (search) {
     if (search.startsWith('?/')) {
-      const redirectedPath = search.slice(2).split('&')[0].replace(/^\//, '').replace(/\/$/, '');
+      const rawParam = search.slice(2).split('&')[0];
+      const redirectedPath = decodeURIComponent(rawParam).replace(/~and~/g, '&').replace(/^\//, '').replace(/\/$/, '');
+      const basePath = getRepoBasePath();
+      
       if (redirectedPath && ROUTE_ALIASES[redirectedPath]) {
-        const basePath = getRepoBasePath();
         const cleanUrl = basePath ? `${basePath}/${redirectedPath}` : `/${redirectedPath}`;
         window.history.replaceState(null, '', cleanUrl);
-        return ROUTE_ALIASES[redirectedPath];
+        return { route: ROUTE_ALIASES[redirectedPath] };
+      } else if (redirectedPath) {
+        // Unknown path passed via ?/ - clean URL without query string so 404.html doesn't loop!
+        const cleanUrl = basePath ? `${basePath}/${redirectedPath}` : `/${redirectedPath}`;
+        window.history.replaceState(null, '', cleanUrl);
+        return { route: '404', attemptedPath: redirectedPath };
       }
     }
     const params = new URLSearchParams(search);
     const p = params.get('p');
     if (p) {
-      const cleanP = p.replace(/^\//, '').replace(/\/$/, '');
+      const cleanP = decodeURIComponent(p).replace(/~and~/g, '&').replace(/^\//, '').replace(/\/$/, '');
+      const basePath = getRepoBasePath();
       if (ROUTE_ALIASES[cleanP]) {
-        return ROUTE_ALIASES[cleanP];
+        const cleanUrl = basePath ? `${basePath}/${cleanP}` : `/${cleanP}`;
+        window.history.replaceState(null, '', cleanUrl);
+        return { route: ROUTE_ALIASES[cleanP] };
+      } else {
+        const cleanUrl = basePath ? `${basePath}/${cleanP}` : `/${cleanP}`;
+        window.history.replaceState(null, '', cleanUrl);
+        return { route: '404', attemptedPath: cleanP };
       }
     }
   }
@@ -80,7 +95,7 @@ const parseRouteFromLocation = (): string => {
   if (window.location.hash) {
     const cleanHash = window.location.hash.replace(/^#\/?/, '').split('?')[0].replace(/\/$/, '');
     if (cleanHash && ROUTE_ALIASES[cleanHash]) {
-      return ROUTE_ALIASES[cleanHash];
+      return { route: ROUTE_ALIASES[cleanHash] };
     }
   }
 
@@ -88,26 +103,31 @@ const parseRouteFromLocation = (): string => {
   const pathname = window.location.pathname;
   const segments = pathname.split('/').filter(Boolean);
 
-  if (segments.length === 0) return 'home';
+  if (segments.length === 0) return { route: 'home' };
 
   // Check last segment first (e.g. /Dork_Xn/guides -> 'guides')
   const lastSegment = segments[segments.length - 1];
   if (ROUTE_ALIASES[lastSegment]) {
-    return ROUTE_ALIASES[lastSegment];
+    return { route: ROUTE_ALIASES[lastSegment] };
   }
 
   // If only 1 segment and it's the repo name (e.g. 'Dork_Xn'), fallback to home
   if (segments.length === 1 && !ROUTE_ALIASES[segments[0]]) {
-    return 'home';
+    // If it's GitHub repo name, it's home
+    if (segments[0].toLowerCase() === 'dork_xn') {
+      return { route: 'home' };
+    }
+    // Otherwise on custom domain it's an invalid 404 path
+    return { route: '404', attemptedPath: segments[0] };
   }
 
   for (let i = segments.length - 1; i >= 0; i--) {
     if (ROUTE_ALIASES[segments[i]]) {
-      return ROUTE_ALIASES[segments[i]];
+      return { route: ROUTE_ALIASES[segments[i]] };
     }
   }
 
-  return 'home';
+  return { route: '404', attemptedPath: segments.join('/') };
 };
 
 export default function App() {
@@ -188,14 +208,15 @@ export default function App() {
   };
 
   // Routing State using robust path and hash parsing
-  const [currentRoute, setCurrentRoute] = useState<string>(parseRouteFromLocation);
+  const [routeInfo, setRouteInfo] = useState<{ route: string; attemptedPath?: string }>(() => parseRouteFromLocation());
+  const currentRoute = routeInfo.route;
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [quickSearchOpen, setQuickSearchOpen] = useState(false);
 
   // Handle browser back/forward buttons and hash navigation
   useEffect(() => {
     const handleLocationChange = () => {
-      setCurrentRoute(parseRouteFromLocation());
+      setRouteInfo(parseRouteFromLocation());
     };
     window.addEventListener('popstate', handleLocationChange);
     window.addEventListener('hashchange', handleLocationChange);
@@ -222,9 +243,9 @@ export default function App() {
     if (params?.domain) setTargetDomain(params.domain);
     if (params?.category) setSelectedCategory(params.category);
 
-    setCurrentRoute(route);
+    setRouteInfo({ route });
     const basePath = getRepoBasePath();
-    const routeSlug = route === 'home' ? '' : route === 'generator' ? 'dork-generator' : route;
+    const routeSlug = route === 'home' ? '' : route === 'generator' ? 'dork-generator' : route === '404' ? '404' : route;
     const urlPath = routeSlug ? `${basePath}/${routeSlug}` : `${basePath}/` || '/';
     window.history.pushState(null, '', urlPath);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -301,6 +322,10 @@ export default function App() {
           currentRoute === 'cookie-policy' ||
           currentRoute === 'editorial-policy') && (
           <LegalPages pageType={currentRoute as any} onNavigate={navigateTo} />
+        )}
+
+        {currentRoute === '404' && (
+          <NotFoundPage onNavigate={navigateTo} attemptedPath={routeInfo.attemptedPath} />
         )}
       </main>
 

@@ -6,18 +6,37 @@
     <meta charset="utf-8">
     <title>Dorksearch</title>
     <script type="text/javascript">
-      // Single Page Apps for GitHub Pages
-      // https://github.com/rafgraph/spa-github-pages
-      var pathSegmentsToKeep = 1;
+      // GitHub Pages SPA Single-Entry Redirect
+      // Safely redirects deep non-matching routes to index.html without infinite loops
+      (function() {
+        var l = window.location;
 
-      var l = window.location;
-      l.replace(
-        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-        l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
-        l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
-        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-        l.hash
-      );
+        // Prevent redirect loops: if already in redirect parameter format, do not re-process
+        if (l.search && (l.search.indexOf('?/') === 0 || l.search.indexOf('?p=') === 0 || l.search.indexOf('~and~') !== -1)) {
+          return;
+        }
+
+        // Determine path segments to keep for GitHub project pages (e.g. /Dork_Xn/)
+        // If hostname is custom domain (not github.io), segments to keep = 0
+        var isCustomDomain = !l.hostname.endsWith('github.io');
+        var pathSegmentsToKeep = isCustomDomain ? 0 : 1;
+
+        var pathParts = l.pathname.split('/').filter(Boolean);
+        var basePrefix = '';
+        var remainingParts = pathParts;
+
+        if (!isCustomDomain && pathParts.length > 0) {
+          basePrefix = '/' + pathParts[0];
+          remainingParts = pathParts.slice(1);
+        }
+
+        var redirectPath = remainingParts.join('/');
+        var searchPart = l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '';
+
+        // Safe replace without recursive loops
+        var targetUrl = l.protocol + '//' + l.host + basePrefix + '/?/' + redirectPath + searchPart + l.hash;
+        l.replace(targetUrl);
+      })();
     </script>
   </head>
   <body>
