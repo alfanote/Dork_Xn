@@ -1,5 +1,5 @@
-import React from 'react';
-import { Home, Compass, Search, FileQuestion, ArrowLeft } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Home, Search, FileQuestion } from 'lucide-react';
 
 interface NotFoundPageProps {
   onNavigate: (route: string) => void;
@@ -7,6 +7,31 @@ interface NotFoundPageProps {
 }
 
 export const NotFoundPage: React.FC<NotFoundPageProps> = ({ onNavigate, attemptedPath }) => {
+  const [secondsLeft, setSecondsLeft] = useState<number>(5);
+  const [isPaused, setIsPaused] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (isPaused) return;
+
+    if (secondsLeft <= 0) {
+      onNavigate('home');
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          onNavigate('home');
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [secondsLeft, isPaused, onNavigate]);
+
   return (
     <div className="min-h-[70vh] flex items-center justify-center px-4 py-16">
       <div className="max-w-xl w-full text-center">
@@ -32,13 +57,30 @@ export const NotFoundPage: React.FC<NotFoundPageProps> = ({ onNavigate, attempte
           </div>
         )}
 
+        {/* 5-Second Countdown Banner */}
+        <div className="mt-6 inline-flex items-center gap-2.5 px-4 py-2 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800/60 text-xs sm:text-sm text-blue-800 dark:text-blue-300">
+          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white font-bold text-xs">
+            {secondsLeft}
+          </span>
+          <span>
+            Redirecting to home page in <strong className="font-semibold">{secondsLeft} second{secondsLeft !== 1 ? 's' : ''}</strong>...
+          </span>
+          <button
+            onClick={() => setIsPaused((prev) => !prev)}
+            className="ml-2 text-xs font-semibold underline underline-offset-2 hover:text-blue-900 dark:hover:text-blue-200 cursor-pointer"
+            title={isPaused ? "Resume auto redirect" : "Pause auto redirect"}
+          >
+            {isPaused ? 'Resume' : 'Stay on Page'}
+          </button>
+        </div>
+
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <button
             onClick={() => onNavigate('home')}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-all shadow-md shadow-blue-500/20 active:scale-95 cursor-pointer"
           >
             <Home className="w-4 h-4" />
-            <span>Return to Homepage</span>
+            <span>Return to Homepage Now</span>
           </button>
 
           <button
