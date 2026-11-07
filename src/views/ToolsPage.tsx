@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { normalizeTarget, buildSearchUrl } from '../utils/dorkUtils';
 import { MascotArtwork, MASCOT_IMAGES } from '../components/mascots/Mascots';
+import { AdUnitPlaceholder } from '../components/ads/AdUnitPlaceholder';
 import {
   Wrench,
   Link,
@@ -89,6 +90,9 @@ export const ToolsPage: React.FC = () => {
             Essential utilities to normalize hostnames, encode URL query strings, and construct custom multi-operator payloads.
           </p>
         </div>
+
+        {/* Top Ad Unit */}
+        <AdUnitPlaceholder slotId="tools-top-banner" format="horizontal" className="mb-8" />
 
         {/* Tool Switcher Tabs */}
         <div className="flex justify-center mb-8">
@@ -410,6 +414,9 @@ export const ToolsPage: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Bottom Ad Unit */}
+        <AdUnitPlaceholder slotId="tools-bottom-banner" format="horizontal" className="mt-12" />
       </div>
     </div>
   );

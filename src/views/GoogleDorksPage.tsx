@@ -3,6 +3,7 @@ import { GOOGLE_DORKS } from '../data/google-dorks';
 import { normalizeTarget, formatQuery, buildSearchUrl } from '../utils/dorkUtils';
 import { MascotArtwork, MASCOT_IMAGES } from '../components/mascots/Mascots';
 import { DorkCard } from '../components/dorks/DorkCard';
+import { AdUnitPlaceholder } from '../components/ads/AdUnitPlaceholder';
 import { DorkItem } from '../types/dork';
 import {
   Search,
@@ -128,6 +129,9 @@ export const GoogleDorksPage: React.FC<GoogleDorksPageProps> = ({
 
       {/* Main Content Area */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* Top Ad Unit */}
+        <AdUnitPlaceholder slotId="google-dorks-top-banner" format="horizontal" className="mb-8" />
+
         {/* Navigation Tabs */}
         <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-4 mb-8">
           <button

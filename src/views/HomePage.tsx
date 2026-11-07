@@ -8,6 +8,7 @@ import { InputWatcherMouse, MascotLogoIcon } from '../components/mascots/Mascots
 import { DorkCard } from '../components/dorks/DorkCard';
 import { ExportMenu } from '../components/dorks/ExportMenu';
 import { FAQAccordion } from '../components/faq/FAQAccordion';
+import { AdUnitPlaceholder } from '../components/ads/AdUnitPlaceholder';
 import {
   Search,
   Globe2,
@@ -277,6 +278,9 @@ export const HomePage: React.FC<HomePageProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Sponsored Ad Banner */}
+          <AdUnitPlaceholder slotId="home-top-banner" format="horizontal" />
         </div>
       </section>
 
@@ -476,32 +480,49 @@ export const HomePage: React.FC<HomePageProps> = ({
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {preparedDorks.map(({ item, formattedQuery }, i) => (
-              <DorkCard
-                key={item.id}
-                item={item}
-                formattedQuery={formattedQuery}
-                engine={selectedEngine}
-                isFavorite={favorites.includes(item.id)}
-                onToggleFavorite={onToggleFavorite}
-                showMascotTouch={i % 6 === 0}
-              />
+              <React.Fragment key={item.id}>
+                <DorkCard
+                  item={item}
+                  formattedQuery={formattedQuery}
+                  engine={selectedEngine}
+                  isFavorite={favorites.includes(item.id)}
+                  onToggleFavorite={onToggleFavorite}
+                  showMascotTouch={i % 6 === 0}
+                />
+                {/* Insert ad after every 6 dorks */}
+                {(i + 1) % 6 === 0 && i !== preparedDorks.length - 1 && (
+                  <div className="col-span-1 md:col-span-2 lg:col-span-3 w-full my-2">
+                    <AdUnitPlaceholder slotId={`home-feed-ad-${i + 1}`} format="horizontal" />
+                  </div>
+                )}
+              </React.Fragment>
             ))}
           </div>
         ) : (
           <div className="space-y-3">
             {preparedDorks.map(({ item, formattedQuery }, i) => (
-              <DorkCard
-                key={item.id}
-                item={item}
-                formattedQuery={formattedQuery}
-                engine={selectedEngine}
-                isFavorite={favorites.includes(item.id)}
-                onToggleFavorite={onToggleFavorite}
-                showMascotTouch={i % 6 === 0}
-              />
+              <React.Fragment key={item.id}>
+                <DorkCard
+                  item={item}
+                  formattedQuery={formattedQuery}
+                  engine={selectedEngine}
+                  isFavorite={favorites.includes(item.id)}
+                  onToggleFavorite={onToggleFavorite}
+                  showMascotTouch={i % 6 === 0}
+                />
+                {/* Insert ad after every 6 dorks */}
+                {(i + 1) % 6 === 0 && i !== preparedDorks.length - 1 && (
+                  <div className="w-full my-3">
+                    <AdUnitPlaceholder slotId={`home-list-ad-${i + 1}`} format="horizontal" />
+                  </div>
+                )}
+              </React.Fragment>
             ))}
           </div>
         )}
+
+        {/* Sponsored Mid Results Ad Banner */}
+        <AdUnitPlaceholder slotId="home-results-bottom-banner" format="horizontal" className="mt-10" />
       </section>
 
       {/* FEATURE HIGHLIGHTS */}

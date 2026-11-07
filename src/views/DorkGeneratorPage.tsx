@@ -6,6 +6,7 @@ import { YANDEX_DORKS } from '../data/yandex-dorks';
 import { normalizeTarget, formatQuery, buildSearchUrl } from '../utils/dorkUtils';
 import { DorkCard } from '../components/dorks/DorkCard';
 import { ExportMenu } from '../components/dorks/ExportMenu';
+import { AdUnitPlaceholder } from '../components/ads/AdUnitPlaceholder';
 import {
   Search,
   Globe2,
@@ -277,6 +278,9 @@ export const DorkGeneratorPage: React.FC<DorkGeneratorPageProps> = ({
                 Execute searches only against hosts you own or have explicit authorized written permission to test under bug bounty or OSINT terms.
               </p>
             </div>
+
+            {/* Sidebar Ad Unit */}
+            <AdUnitPlaceholder slotId="generator-sidebar-ad" format="rectangle" />
           </aside>
 
           {/* Right Workspace: Filters & Dork Cards */}
