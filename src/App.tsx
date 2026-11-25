@@ -3,6 +3,8 @@ import { SearchEngine, DorkItem } from './types/dork';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { QuickSearchModal } from './components/search/QuickSearchModal';
+import { SnowEffect } from './components/effects/SnowEffect';
+import { FrostyEdgeOverlay } from './components/effects/FrostyEdgeOverlay';
 
 // Views
 import { HomePage } from './views/HomePage';
@@ -256,7 +258,13 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors selection:bg-blue-100 dark:selection:bg-blue-900">
+    <div className="relative min-h-screen flex flex-col bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors selection:bg-blue-100 dark:selection:bg-blue-900 overflow-x-hidden">
+      {/* Winter Falling Snowflakes Effect (pointer-events-none ensures no UI click interference) */}
+      <SnowEffect flakeCount={65} />
+
+      {/* CSS-based Frosty Edge & Corner Vignette Overlay */}
+      <FrostyEdgeOverlay intensity="medium" />
+
       {/* Top Bar Navigation */}
       <Navbar
         currentRoute={currentRoute}

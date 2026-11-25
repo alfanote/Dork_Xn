@@ -29,3 +29,25 @@ code, kbd, samp, pre, .font-mono {
   background: rgba(100, 116, 139, 0.6);
 }
 
+/* Winter Snowflake Particle Animations */
+@keyframes snowFall {
+  0% {
+    transform: translateY(-20px);
+  }
+  100% {
+    transform: translateY(105vh);
+  }
+}
+
+@keyframes snowSway {
+  0% {
+    transform: translateX(-18px) rotate(0deg);
+  }
+  50% {
+    transform: translateX(18px) rotate(180deg);
+  }
+  100% {
+    transform: translateX(-18px) rotate(360deg);
+  }
+}
+
